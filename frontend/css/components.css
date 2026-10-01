@@ -1,0 +1,459 @@
+/* ==========================================================================
+   BLUEGRID AI — Component-Specific Styles
+   Energy Flow, Plant Suitability, Simulation Sliders, Reports & Print
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   KPI Metric Cards
+   -------------------------------------------------------------------------- */
+.kpi-card {
+  background: var(--color-surface-white);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--border-radius-md);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-ocean-blue), var(--color-cyan));
+}
+
+.kpi-card.success::before { background: var(--color-success); }
+.kpi-card.warning::before { background: var(--color-warning); }
+.kpi-card.purple::before { background: var(--color-simulation); }
+
+.kpi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.kpi-title {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.kpi-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  background: rgba(8, 125, 181, 0.1);
+  color: var(--color-ocean-blue);
+}
+
+.kpi-value {
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: var(--color-dark-text);
+  line-height: 1.1;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.kpi-value .unit {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-ocean-blue);
+}
+
+.kpi-footer {
+  margin-top: 10px;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* --------------------------------------------------------------------------
+   Section 16: Animated Energy Flow Visualization
+   -------------------------------------------------------------------------- */
+.energy-flow-container {
+  background: radial-gradient(circle at center, #0B4F8A 0%, #063B70 65%, #082B45 100%);
+  border-radius: var(--border-radius-lg);
+  padding: 36px 24px;
+  color: #FFFFFF;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 28px;
+}
+
+.energy-flow-grid {
+  display: grid;
+  grid-template-areas:
+    ". solar ."
+    "wind hub otec"
+    ". battery ."
+    ". load .";
+  grid-template-columns: 1fr 220px 1fr;
+  grid-template-rows: auto auto auto auto;
+  gap: 24px;
+  align-items: center;
+  justify-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.flow-node {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--border-radius-md);
+  padding: 16px 20px;
+  text-align: center;
+  min-width: 170px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  transition: transform var(--transition-fast);
+}
+
+.flow-node:hover {
+  transform: scale(1.04);
+}
+
+.flow-node.solar { grid-area: solar; border-color: rgba(255, 209, 102, 0.6); }
+.flow-node.wind { grid-area: wind; border-color: rgba(22, 199, 217, 0.6); }
+.flow-node.otec { grid-area: otec; border-color: rgba(77, 182, 172, 0.6); }
+.flow-node.hub {
+  grid-area: hub;
+  background: linear-gradient(135deg, rgba(8, 125, 181, 0.85) 0%, rgba(6, 59, 112, 0.95) 100%);
+  border: 2px solid var(--color-cyan);
+  box-shadow: 0 0 25px var(--color-cyan-glow);
+  padding: 24px 20px;
+}
+.flow-node.battery { grid-area: battery; border-color: rgba(16, 185, 129, 0.6); }
+.flow-node.load { grid-area: load; border-color: rgba(255, 159, 28, 0.6); }
+
+.node-icon {
+  font-size: 1.8rem;
+  margin-bottom: 6px;
+}
+
+.node-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.node-val {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin-top: 4px;
+}
+
+.node-sub {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* SVG animated conduits overlay */
+.flow-conduits-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.flow-stream {
+  stroke-dasharray: 8 8;
+  animation: dashStream 1.2s linear infinite;
+}
+
+@keyframes dashStream {
+  to { stroke-dashoffset: -32; }
+}
+
+/* --------------------------------------------------------------------------
+   Section 13 & 14: Plant Suitability & Unit Counts
+   -------------------------------------------------------------------------- */
+.suitability-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.suitability-card {
+  background: var(--color-surface-white);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--border-radius-md);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.suit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.suit-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-dark-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.suit-badge {
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.suit-badge.green { background: #DCFCE7; color: #166534; }
+.suit-badge.amber { background: #FEF3C7; color: #92400E; }
+.suit-badge.red { background: #FEE2E2; color: #991B1B; }
+.suit-badge.blue { background: #DBEAFE; color: #1E40AF; }
+
+.suit-metric-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px dashed rgba(8, 125, 181, 0.12);
+  font-size: 0.84rem;
+}
+
+.suit-metric-row:last-child {
+  border-bottom: none;
+}
+
+.suit-metric-label {
+  color: var(--color-text-muted);
+}
+
+.suit-metric-val {
+  font-weight: 700;
+  color: var(--color-dark-text);
+}
+
+.plant-counts-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 14px;
+  font-size: 0.88rem;
+}
+
+.plant-counts-table th {
+  background: var(--color-light-bg);
+  color: var(--color-dark-text);
+  padding: 12px 14px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid var(--color-card-border);
+}
+
+.plant-counts-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--color-card-border);
+}
+
+.plant-counts-table tr:hover {
+  background: rgba(22, 199, 217, 0.05);
+}
+
+/* --------------------------------------------------------------------------
+   Section 18: Simulation Sliders
+   -------------------------------------------------------------------------- */
+.sim-controls-panel {
+  background: var(--color-surface-white);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--border-radius-md);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.sim-slider-group {
+  margin-bottom: 22px;
+}
+
+.sim-slider-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--color-dark-text);
+}
+
+.sim-slider-val {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--color-ocean-blue);
+  background: rgba(8, 125, 181, 0.1);
+  padding: 2px 10px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+}
+
+.range-slider {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: #E2E8F0;
+  outline: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-ocean-blue);
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: transform 0.1s ease, background-color 0.2s ease;
+}
+
+.range-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  background: var(--color-cyan);
+}
+
+/* --------------------------------------------------------------------------
+   Section 25: Report Layout & Print Media
+   -------------------------------------------------------------------------- */
+.report-sheet {
+  background: #FFFFFF;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-card-border);
+  box-shadow: var(--shadow-md);
+  padding: 48px;
+  max-width: 960px;
+  margin: 0 auto 30px;
+  color: var(--color-dark-text);
+}
+
+.report-header-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 24px;
+  border-bottom: 3px solid var(--color-deep-ocean);
+  margin-bottom: 32px;
+}
+
+.report-header-banner h2 {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--color-deep-ocean);
+}
+
+.report-header-banner p {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.report-section-block {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.report-section-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-ocean-blue);
+  margin-bottom: 12px;
+}
+
+/* Print Media Query */
+@media print {
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+  }
+  .sidebar, .app-header, .btn, .no-print {
+    display: none !important;
+  }
+  .main-wrapper {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+  .content-body {
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+  .report-sheet {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+  .report-section-block {
+    page-break-inside: avoid;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   NIOT CSV Import Styles
+   -------------------------------------------------------------------------- */
+.dropzone-box {
+  border: 2px dashed var(--color-ocean-blue);
+  border-radius: var(--border-radius-md);
+  background: rgba(8, 125, 181, 0.04);
+  padding: 40px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.dropzone-box:hover, .dropzone-box.drag-over {
+  background: rgba(22, 199, 217, 0.12);
+  border-color: var(--color-cyan);
+}
+
+.dropzone-icon {
+  font-size: 2.5rem;
+  color: var(--color-ocean-blue);
+  margin-bottom: 12px;
+}
+
+.preview-table-container {
+  max-height: 380px;
+  overflow-y: auto;
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--border-radius-sm);
+  margin-top: 18px;
+}

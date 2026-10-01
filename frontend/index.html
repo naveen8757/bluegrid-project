@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="BlueGrid AI — Optimal Hybrid Renewable Energy Planner for Sustainable Islands (Solar, Wind, OTEC, Battery Storage).">
+  <meta name="theme-color" content="#087DB5">
+  <title>🌊 BLUEGRID AI — Optimal Hybrid Renewable Energy Planner for Sustainable Islands</title>
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="assets/icon-192.svg">
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+  <!-- Application CSS -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/ocean-theme.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- =========================================================================
+       SIDEBAR NAVIGATION (Section 4)
+       ========================================================================= -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-logo">
+        <i class="fa-solid fa-water"></i>
+      </div>
+      <div class="brand-text">
+        <h1>BLUEGRID <span>AI</span></h1>
+        <p>Sustainable Island Microgrids</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Overview</div>
+      <a class="nav-link active" data-section="home">
+        <i class="fa-solid fa-house"></i> Home
+      </a>
+      <a class="nav-link" data-section="dashboard">
+        <i class="fa-solid fa-gauge-high"></i> Dashboard
+      </a>
+
+      <div class="nav-section-title">Island Geographic Data</div>
+      <a class="nav-link" data-section="islands">
+        <i class="fa-solid fa-map-location-dot"></i> Island Catalog & Map
+      </a>
+      <a class="nav-link" data-section="island-details">
+        <i class="fa-solid fa-circle-info"></i> Island Resource Profile
+      </a>
+
+      <div class="nav-section-title">AI Optimization Engine</div>
+      <a class="nav-link" data-section="optimizer">
+        <i class="fa-solid fa-bolt"></i> Energy Optimizer
+      </a>
+      <a class="nav-link" data-section="simulation">
+        <i class="fa-solid fa-sliders"></i> Simulation Sandbox
+      </a>
+      <a class="nav-link" data-section="results">
+        <i class="fa-solid fa-square-poll-vertical"></i> Optimization Results
+      </a>
+
+      <div class="nav-section-title">Infrastructure & Analysis</div>
+      <a class="nav-link" data-section="plants">
+        <i class="fa-solid fa-solar-panel"></i> Power Plants & Sizing
+      </a>
+      <a class="nav-link" data-section="analytics">
+        <i class="fa-solid fa-chart-line"></i> Energy Analytics
+      </a>
+      <a class="nav-link" data-section="reports">
+        <i class="fa-solid fa-file-invoice"></i> Technical Reports
+      </a>
+
+      <div class="nav-section-title">Management & Settings</div>
+      <a class="nav-link" data-section="projects">
+        <i class="fa-solid fa-folder"></i> Saved Projects
+      </a>
+      <a class="nav-link" data-section="settings">
+        <i class="fa-solid fa-gears"></i> System & NIOT Import
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="system-mini-status">
+        <span>Engine: Python & Local JS</span>
+        <span class="status-dot green" title="Optimization Engine Ready"></span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- =========================================================================
+       MAIN APPLICATION VIEWPORT
+       ========================================================================= -->
+  <div class="main-wrapper">
+    <!-- Top Header Bar -->
+    <header class="app-header">
+      <div class="header-left">
+        <button class="mobile-toggle" id="mobileToggleBtn" aria-label="Toggle navigation">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="page-breadcrumb">
+          <span>BlueGrid AI</span> / <strong id="pageBreadcrumbTitle">Home / Welcome</strong>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- Operation Mode Badge (Section 3: OFFLINE / ONLINE / SIMULATION) -->
+        <div id="headerModeBadge" class="mode-badge mode-online" title="Click to toggle offline/online demo mode">
+          <span class="status-dot blue"></span> ONLINE MODE
+        </div>
+
+        <button class="btn btn-primary btn-sm" onclick="BlueGridApp.navigateTo('optimizer')">
+          <i class="fa-solid fa-bolt"></i> Run Optimizer
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Dynamic Content Body (12 SPA Views) -->
+    <main class="content-body">
+
+      <!-- =====================================================================
+           SECTION 1: HOME PAGE (Section 5)
+           ===================================================================== -->
+      <section id="section-home" class="page-section active">
+        <!-- Ocean Animated Hero Banner -->
+        <div class="hero-ocean-banner">
+          <canvas id="heroParticlesCanvas" class="hero-particles-canvas"></canvas>
+
+          <div class="hero-content">
+            <div class="hero-tag">
+              <i class="fa-solid fa-shield-halved"></i> Island Renewable Microgrid Planner
+            </div>
+            <h1 class="hero-title">
+              Smarter Energy for <br>
+              <span class="text-gradient">Sustainable Islands</span>
+            </h1>
+            <p class="hero-subtitle">
+              AI-powered hybrid renewable energy planning for resilient island communities.
+              Dynamically co-optimizes <strong>Solar PV</strong>, <strong>Offshore Wind</strong>, <strong>Ocean Thermal (OTEC)</strong>,
+              and <strong>Battery Energy Storage</strong> to eliminate diesel dependency and secure zero-outage grid reliability.
+            </p>
+
+            <div class="hero-actions">
+              <button class="btn btn-cyan btn-lg" onclick="BlueGridApp.navigateTo('optimizer')">
+                <i class="fa-solid fa-bolt"></i> Start Optimization
+              </button>
+              <button class="btn btn-outline btn-lg" style="color: #FFFFFF; border-color: rgba(255,255,255,0.7);" onclick="BlueGridApp.navigateTo('islands')">
+                <i class="fa-solid fa-map-location-dot"></i> Explore Islands
+              </button>
+              <button class="btn btn-outline btn-lg" style="color: var(--color-cyan); border-color: var(--color-cyan);" onclick="BlueGridApp.navigateTo('simulation')">
+                <i class="fa-solid fa-sliders"></i> Simulation Sandbox
+              </button>
+            </div>
+
+            <!-- Key Platform Highlights Strip -->
+            <div class="hero-stats-strip">
+              <div class="stat-item">
+                <div class="stat-value">99.8 <span class="unit">%</span></div>
+                <div class="stat-label">Grid Reliability Standard</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">85-100 <span class="unit">%</span></div>
+                <div class="stat-label">Diesel Cut Achievable</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">24/7 <span class="unit">Baseload</span></div>
+                <div class="stat-label">OTEC Ocean Thermal Power</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">100 <span class="unit">%</span></div>
+                <div class="stat-label">Offline Capable & Local</div>
+              </div>
+            </div>
+
+            <div class="demo-disclaimer-badge">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>Demonstration Dataset: Island values calibrated with NIOT & MNRE ocean thermal benchmarks.</span>
+            </div>
+          </div>
+
+          <!-- Animated Bottom Waves -->
+          <div class="hero-waves-container">
+            <svg class="hero-wave-svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+              <path d="M0,0 C150,90 350,-40 500,60 C650,160 900,10 1200,40 L1200,120 L0,120 Z" fill="#EEF6FB"></path>
+            </svg>
+            <svg class="hero-wave-svg wave-front" viewBox="0 0 1200 120" preserveAspectRatio="none">
+              <path d="M0,40 C300,120 450,20 600,70 C750,120 1050,40 1200,80 L1200,120 L0,120 Z" fill="#EEF6FB"></path>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Problem & Solution Overview Grid -->
+        <div class="grid-3" style="margin-bottom: 28px;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-triangle-exclamation" style="color: #EF4444;"></i> The Island Energy Dilemma
+              </div>
+            </div>
+            <p style="font-size: 0.88rem; color: #537592; line-height: 1.6;">
+              Remote archipelagos like <strong>Lakshadweep</strong> and <strong>Andaman & Nicobar</strong> depend almost entirely on imported diesel barged over rough seas, resulting in extreme electricity costs ($0.35–$0.60/kWh), high carbon footprints, and fragile supply chains.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-water" style="color: #087DB5;"></i> Why OTEC + Marine Hybrid?
+              </div>
+            </div>
+            <p style="font-size: 0.88rem; color: #537592; line-height: 1.6;">
+              While solar and wind are intermittent, <strong>Ocean Thermal Energy Conversion (OTEC)</strong> utilizes the steep ~22°C temperature gradient between tropical surface water and 1,000m deep cold ocean currents to generate <strong>constant 24/7 clean baseload power</strong> alongside freshwater desalination.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-brain" style="color: #16C7D9;"></i> Autonomous Optimization
+              </div>
+            </div>
+            <p style="font-size: 0.88rem; color: #537592; line-height: 1.6;">
+              BlueGrid AI automates the complex multi-variable microgrid planning problem: matching diurnal load curves, sizing modular solar PV, coastal wind, OTEC, and battery storage to maximize fuel savings without risking blackouts.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           SECTION 2: DASHBOARD
+           ===================================================================== -->
+      <section id="section-dashboard" class="page-section">
+        <div class="card-header" style="border: none; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 1.5rem; font-weight: 800; color: #063B70;">Executive Dashboard</h2>
+            <p class="card-subtitle">Real-time status of island renewable microgrids and optimization active state</p>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-outline btn-sm" onclick="BlueGridApp.navigateTo('islands')">
+              <i class="fa-solid fa-map"></i> View Map
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="BlueGridApp.navigateTo('optimizer')">
+              <i class="fa-solid fa-bolt"></i> Launch Optimizer
+            </button>
+          </div>
+        </div>
+
+        <div class="grid-4" style="margin-bottom: 24px;">
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">Selected Island</span>
+              <div class="kpi-icon"><i class="fa-solid fa-island-tropical"></i></div>
+            </div>
+            <div class="kpi-value" id="dashSelectedIslandName" style="font-size: 1.6rem;">Agatti</div>
+            <div class="kpi-footer">
+              <i class="fa-solid fa-location-dot"></i> Lakshadweep Archipelago
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">Peak & Avg Demand</span>
+              <div class="kpi-icon"><i class="fa-solid fa-chart-area"></i></div>
+            </div>
+            <div class="kpi-value">0.70 <span class="unit">MW</span></div>
+            <div class="kpi-footer">
+              <i class="fa-solid fa-users"></i> Pop: 8,000 residents
+            </div>
+          </div>
+
+          <div class="kpi-card success">
+            <div class="kpi-header">
+              <span class="kpi-title">Target Clean Energy</span>
+              <div class="kpi-icon"><i class="fa-solid fa-leaf"></i></div>
+            </div>
+            <div class="kpi-value">85 <span class="unit">%</span></div>
+            <div class="kpi-footer" style="color: #10B981;">
+              <i class="fa-solid fa-arrow-trend-up"></i> Displacing 950 kW Diesel
+            </div>
+          </div>
+
+          <div class="kpi-card purple">
+            <div class="kpi-header">
+              <span class="kpi-title">OTEC Baseload ΔT</span>
+              <div class="kpi-icon"><i class="fa-solid fa-water"></i></div>
+            </div>
+            <div class="kpi-value">22.4 <span class="unit">°C</span></div>
+            <div class="kpi-footer" style="color: #8B5CF6;">
+              <i class="fa-solid fa-circle-check"></i> High Bathymetric Viability
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Launch Banner -->
+        <div class="card" style="background: linear-gradient(135deg, #EEF6FB 0%, #FFFFFF 100%); border-left: 5px solid #087DB5;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+            <div>
+              <h3 style="color: #063B70; font-size: 1.15rem; margin-bottom: 4px;">Ready to Plan an Island Transition?</h3>
+              <p style="color: #537592; font-size: 0.88rem; margin: 0;">
+                Select an island from our database or input custom microgrid load parameters to run multi-criteria AI optimization.
+              </p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn btn-outline" onclick="BlueGridApp.navigateTo('islands')">Browse Islands</button>
+              <button class="btn btn-primary" onclick="BlueGridApp.navigateTo('optimizer')">Open Energy Optimizer</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           SECTION 3: ISLANDS CATALOG & MAP (Section 6 & 7)
+           ===================================================================== -->
+      <section id="section-islands" class="page-section">
+        <div class="card-header" style="border: none; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 1.5rem; font-weight: 800; color: #063B70;">Island Database & Interactive Map</h2>
+            <p class="card-subtitle">Explore remote islands, coastal microgrids, renewable potentials, and launch 1-click optimization</p>
+          </div>
+        </div>
+
+        <!-- Search and Filter Bar -->
+        <div class="card" style="padding: 16px 20px; margin-bottom: 20px;">
+          <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 240px; position: relative;">
+              <input type="text" id="islandSearchInput" placeholder="Search by island name, region, or state..."
+                     style="width: 100%; padding: 10px 14px 10px 38px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 0.88rem;"
+                     oninput="BlueGridApp.filterIslands()">
+              <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 13px; color: #94A3B8;"></i>
+            </div>
+
+            <div style="min-width: 200px;">
+              <select id="regionFilterSelect" style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 0.88rem; background: #fff;"
+                      onchange="BlueGridApp.filterIslands()">
+                <option value="All">All Regions</option>
+                <option value="Lakshadweep">Lakshadweep Archipelago</option>
+                <option value="Andaman & Nicobar">Andaman & Nicobar</option>
+                <option value="Western Coast">Western Coast</option>
+                <option value="Karnataka Coast">Karnataka Coast</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Map Container with Toolbar & API Key trigger -->
+        <div class="card" style="padding: 16px; margin-bottom: 24px;">
+          <!-- Map Control Toolbar -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span id="mapActiveLayerBadge" class="suit-badge blue" style="display: inline-flex; align-items: center;">
+                <span class="status-dot blue"></span> <strong>Esri Ocean Bathymetry (Active)</strong>
+              </span>
+
+              <div style="display: inline-flex; gap: 4px; background: #EEF6FB; padding: 3px; border-radius: 6px;">
+                <button class="btn btn-sm" style="background: transparent; color: #082B45; font-size: 0.76rem; padding: 4px 8px;" onclick="BlueGridMap.setLayer('🌊 Ocean & Bathymetry (Esri)')">
+                  🌊 Ocean Bathymetry
+                </button>
+                <button class="btn btn-sm" style="background: transparent; color: #082B45; font-size: 0.76rem; padding: 4px 8px;" onclick="BlueGridMap.setLayer('🛰️ High-Res Satellite (Esri)')">
+                  🛰️ Satellite
+                </button>
+                <button class="btn btn-sm" style="background: transparent; color: #082B45; font-size: 0.76rem; padding: 4px 8px;" onclick="BlueGridMap.setLayer('🗺️ Coastal Navigation (CARTO)')">
+                  🗺️ Navigation
+                </button>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 0.75rem; color: #087DB5; background: #EEF6FB; border: 1px dashed #087DB5; padding: 3px 10px; border-radius: 12px; font-weight: 600;">
+                <i class="fa-solid fa-circle-dot" style="color: #16C7D9;"></i> 1,000m OTEC Depth Buffers Visible
+              </span>
+              <button class="btn btn-outline btn-sm" onclick="BlueGridMap.openApiKeyModal()" style="border-color: #087DB5; color: #087DB5; font-weight: 700;">
+                <i class="fa-solid fa-key"></i> Map & Satellite API Key
+              </button>
+            </div>
+          </div>
+
+          <div id="islandMap"></div>
+        </div>
+
+        <!-- Island Cards Grid -->
+        <div class="grid-3" id="islandsGridContainer">
+          <!-- Populated dynamically via BlueGridApp.loadIslands() -->
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           SECTION 4: ISLAND DETAILS PAGE (Section 8)
+           ===================================================================== -->
+      <section id="section-island-details" class="page-section">
+        <div class="card-header" style="border: none; margin-bottom: 16px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <h2 id="detailIslandName" style="font-size: 1.6rem; font-weight: 800; color: #063B70;">Agatti Island</h2>
+              <span id="detailIslandRegion" style="font-size: 0.8rem; background: #EEF6FB; color: #087DB5; font-weight: 700; padding: 4px 12px; border-radius: 20px;">Lakshadweep</span>
+            </div>
+            <p id="detailIslandDesc" class="card-subtitle" style="margin-top: 6px; font-size: 0.9rem;">
+              Coral atoll island with domestic airport and sensitive lagoon ecosystems.
+            </p>
+          </div>
+          <button class="btn btn-primary" onclick="BlueGridApp.selectIslandAndOptimize(selectedIsland ? selectedIsland.id : 1)">
+            <i class="fa-solid fa-bolt"></i> Optimize This Island
+          </button>
+        </div>
+
+        <!-- Island Overview Demographics & Grid Stats -->
+        <div class="grid-4" style="margin-bottom: 24px;">
+          <div class="kpi-card">
+            <div class="kpi-header"><span class="kpi-title">Population</span><div class="kpi-icon"><i class="fa-solid fa-users"></i></div></div>
+            <div class="kpi-value" id="detailPop">8,000</div>
+            <div class="kpi-footer"><i class="fa-solid fa-ruler-combined"></i> Area: <span id="detailArea">3.84 km²</span></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-header"><span class="kpi-title">Coordinates</span><div class="kpi-icon"><i class="fa-solid fa-compass"></i></div></div>
+            <div class="kpi-value" id="detailCoords" style="font-size: 1.25rem;">10.85°N, 72.19°E</div>
+            <div class="kpi-footer"><i class="fa-solid fa-water"></i> Arabian Sea Atoll</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-header"><span class="kpi-title">Demand Profile</span><div class="kpi-icon"><i class="fa-solid fa-bolt"></i></div></div>
+            <div class="kpi-value" id="detailDemand" style="font-size: 1.25rem;">0.70 MW / 0.45 MW</div>
+            <div class="kpi-footer"><i class="fa-solid fa-oil-well"></i> Diesel: <span id="detailDiesel">950 kW</span></div>
+          </div>
+          <div class="kpi-card purple">
+            <div class="kpi-header"><span class="kpi-title">Deep Sea Bathymetry</span><div class="kpi-icon"><i class="fa-solid fa-anchor"></i></div></div>
+            <div class="kpi-value" id="detailDepth" style="font-size: 1.25rem;">3.2 km to 1000m</div>
+            <div class="kpi-footer" id="detailTemps">28.6°C / 6.2°C (ΔT ~22.4°C)</div>
+          </div>
+        </div>
+
+        <!-- Section 8: 4 Renewable Potential Cards -->
+        <h3 style="font-size: 1.2rem; font-weight: 800; color: #063B70; margin-bottom: 16px;">
+          Renewable Energy Resource Potentials
+        </h3>
+        <div class="grid-4" style="margin-bottom: 24px;">
+          <!-- Solar Card -->
+          <div class="card" style="border-top: 4px solid #FFD166;">
+            <div class="card-title" style="margin-bottom: 10px;">
+              <span>☀️</span> Solar Photovoltaic
+            </div>
+            <div style="font-size: 0.82rem; color: #537592; margin-bottom: 10px;">
+              High horizontal solar irradiance (GHI ~5.6 kWh/m²/day) ideal for rooftop and floating lagoon arrays.
+            </div>
+            <div class="suit-metric-row">
+              <span class="suit-metric-label">Capacity Factor:</span>
+              <strong id="detailSolarCF">CF: 22%</strong>
+            </div>
+            <div class="suit-metric-row">
+              <span class="suit-metric-label">Current Installed:</span>
+              <strong id="detailSolarCap">100 kW</strong>
+            </div>
+          </div>
+
+          <!-- Wind Card -->
+          <div class="card" style="border-top: 4px solid #16C7D9;">
+            <div class="card-title" style="margin-bottom: 10px;">
+              <span>💨</span> Coastal Wind Energy
+            </div>
+            <div style="font-size: 0.82rem; color: #537592; margin-bottom: 10px;">
+              Strong southwest monsoon wind corridors and persistent diurnal sea-breeze thermal circulation.
+            </div>
+            <div class="suit-metric-row">
+              <span class="suit-metric-label">Capacity Factor:</span>
+              <strong id="detailWindCF">CF: 32%</strong>
+            </div>
+            <div class="suit-metric-row">
+              <span class="suit-metric-label">Current Installed:</span>
+              <strong id="detailWindCap">0 kW</strong>
+            </div>
+          </div>
+
+          <!-- OTEC Card -->
+          <div class="card" style="border-top: 4px solid #087DB5;">
+            <div class="card-title" style="margin-bottom: 10px;">
+              <span>🌊</span> Ocean Thermal (OTEC)
+            </div>
+            <div style="font-size: 0.82rem; color: #537592; margin-bottom: 10px;">
+              Steep drop-off bathymetry allows deep-sea cold intake for 24/7 continuous baseload & desalination.
+            </div>
+            <div class="suit-metric-row">
+              <span class="suit-metric-label">Availability / CF:</span>
+              <strong id="detailOtecCF" style="color: #087DB5;">CF: 82% (24/7)</strong>
+            </div>
+            <div class="suit-metric-row">
+              <span class="suit-metric-label">Current Installed:</span>
+              <strong id="detailOtecCap">0 kW</strong>
+            </div>
+          </div>
+
+          <!-- Battery Card -->
+          <div class="card" style="border-top: 4px solid #10B981;">
+            <div class="card-title" style="margin-bottom: 10px;">
+              <span>🔋</span> Battery Storage (BESS)
+            </div>
+            <div style="font-size: 0.82rem; color: #537592; margin-bottom: 10px;">
+              Containerized LiFePO4 battery storage for solar shift, night peak firming, and frequency stability.
+            </div>
+            <div class="suit-metric-row">
+              <span class="suit-metric-label">Target Autonomy:</span>
+              <strong>6.0 Hours</strong>
+            </div>
+            <div class="suit-metric-row">
+              <span class="suit-metric-label">Current Installed:</span>
+              <strong id="detailBatteryCap">500 kWh</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           SECTION 5: ENERGY OPTIMIZER (Section 9 & 10)
+           ===================================================================== -->
+      <section id="section-optimizer" class="page-section">
+        <div class="card-header" style="border: none; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 1.5rem; font-weight: 800; color: #063B70;">Hybrid Renewable Energy Optimizer</h2>
+            <p class="card-subtitle">Configure microgrid demand, physical constraints, and renewable targets to generate the optimal energy mix</p>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <!-- Column 1: Island Preset & Demand Inputs -->
+          <div class="card">
+            <div class="card-title" style="margin-bottom: 14px;">
+              <i class="fa-solid fa-sliders" style="color: #087DB5;"></i> 1. Demand & Location Preset
+            </div>
+
+            <div style="margin-bottom: 16px;">
+              <label style="display: block; font-size: 0.82rem; font-weight: 600; color: #537592; margin-bottom: 6px;">Select Island Preset</label>
+              <select id="optIslandSelect" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 0.88rem;"
+                      onchange="BlueGridApp.selectIsland(this.value, false)">
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+              <label style="display: block; font-size: 0.82rem; font-weight: 600; color: #537592; margin-bottom: 6px;">Peak Microgrid Demand (MW)</label>
+              <input type="number" step="0.05" id="optPeakDemand" value="0.70"
+                     style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 0.95rem; font-weight: 700;">
+            </div>
+
+            <div style="margin-bottom: 16px;">
+              <label style="display: block; font-size: 0.82rem; font-weight: 600; color: #537592; margin-bottom: 6px;">Average Baseline Demand (MW)</label>
+              <input type="number" step="0.05" id="optAvgDemand" value="0.45"
+                     style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 0.95rem; font-weight: 700;">
+            </div>
+
+            <div style="margin-bottom: 8px;">
+              <label style="display: block; font-size: 0.82rem; font-weight: 600; color: #537592; margin-bottom: 6px;">Existing Diesel Backup Capacity (kW)</label>
+              <input type="number" step="50" id="optDieselExisting" value="950"
+                     style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 0.95rem;">
+            </div>
+          </div>
+
+          <!-- Column 2: Existing Infrastructure & Potentials -->
+          <div class="card">
+            <div class="card-title" style="margin-bottom: 14px;">
+              <i class="fa-solid fa-solar-panel" style="color: #FFD166;"></i> 2. Existing Infrastructure (kW)
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+              <div>
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #537592; margin-bottom: 4px;">Existing Solar (kW)</label>
+                <input type="number" id="optSolarExisting" value="100" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #CBD5E1;">
+              </div>
+              <div>
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #537592; margin-bottom: 4px;">Solar CF (Potential)</label>
+                <input type="number" step="0.01" id="optSolarPot" value="0.22" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #CBD5E1;">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+              <div>
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #537592; margin-bottom: 4px;">Existing Wind (kW)</label>
+                <input type="number" id="optWindExisting" value="0" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #CBD5E1;">
+              </div>
+              <div>
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #537592; margin-bottom: 4px;">Wind CF (Potential)</label>
+                <input type="number" step="0.01" id="optWindPot" value="0.32" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #CBD5E1;">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+              <div>
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #537592; margin-bottom: 4px;">Existing OTEC (kW)</label>
+                <input type="number" id="optOtecExisting" value="0" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #CBD5E1;">
+              </div>
+              <div>
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #537592; margin-bottom: 4px;">OTEC Viability (0-1)</label>
+                <input type="number" step="0.01" id="optOtecPot" value="0.80" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #CBD5E1;">
+              </div>
+            </div>
+
+            <div>
+              <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #537592; margin-bottom: 4px;">Existing Battery (kWh)</label>
+              <input type="number" id="optBatteryExisting" value="500" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #CBD5E1;">
+            </div>
+          </div>
+
+          <!-- Column 3: Targets & Solve Trigger -->
+          <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div class="card-title" style="margin-bottom: 14px;">
+                <i class="fa-solid fa-bullseye" style="color: #10B981;"></i> 3. Targets & Constraints
+              </div>
+
+              <div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">
+                  <span>Renewable Target:</span>
+                  <span id="optTargetRenVal" style="color: #087DB5; font-weight: 800;">85%</span>
+                </div>
+                <input type="range" class="range-slider" id="optTargetRen" min="40" max="100" value="85"
+                       oninput="document.getElementById('optTargetRenVal').textContent = this.value + '%'">
+              </div>
+
+              <div style="margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">
+                  <span>Grid Reliability Target:</span>
+                  <span id="optTargetRelVal" style="color: #10B981; font-weight: 800;">99.5%</span>
+                </div>
+                <input type="range" class="range-slider" id="optTargetRel" min="90" max="99.9" step="0.1" value="99.5"
+                       oninput="document.getElementById('optTargetRelVal').textContent = this.value + '%'">
+              </div>
+
+              <div style="background: #EEF6FB; border-radius: 8px; padding: 12px; font-size: 0.8rem; color: #537592; line-height: 1.5; margin-bottom: 20px;">
+                <i class="fa-solid fa-circle-info" style="color: #087DB5;"></i> The solver automatically evaluates diurnal load, shapes 24h battery dispatch, and calculates optimal unit counts for Solar, Wind, and OTEC.
+              </div>
+            </div>
+
+            <button class="btn btn-primary btn-lg" id="btnRunOptimization" style="width: 100%;" onclick="BlueGridApp.triggerOptimization()">
+              <i class="fa-solid fa-bolt"></i> Run AI Optimization
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           SECTION 6: SIMULATION MODE (Section 3 & 18)
+           ===================================================================== -->
+      <section id="section-simulation" class="page-section">
+        <div class="card-header" style="border: none; margin-bottom: 16px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <h2 style="font-size: 1.5rem; font-weight: 800; color: #063B70;">Real-Time Simulation Sandbox</h2>
+              <span class="mode-badge mode-simulation">🟣 SIMULATION MODE</span>
+            </div>
+            <p class="card-subtitle">Adjust sliders to immediately see how demand growth, renewable expansion, and storage impact the energy mix without page reload</p>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom: 24px;">
+          <!-- Left: Simulation Controls -->
+          <div class="sim-controls-panel">
+            <h3 style="font-size: 1.1rem; color: #063B70; margin-bottom: 16px; font-weight: 700;">
+              Interactive Scenario Parameters
+            </h3>
+
+            <!-- Slider 1: Demand Multiplier -->
+            <div class="sim-slider-group">
+              <div class="sim-slider-label">
+                <span>Microgrid Demand Scale (Growth Factor)</span>
+                <span class="sim-slider-val" id="simDemandMultVal">1.0x</span>
+              </div>
+              <input type="range" class="range-slider" id="simDemandMult" min="0.4" max="3.0" step="0.1" value="1.0">
+            </div>
+
+            <!-- Slider 2: Solar Capacity -->
+            <div class="sim-slider-group">
+              <div class="sim-slider-label">
+                <span>Solar PV Capacity (kW)</span>
+                <span class="sim-slider-val" id="simSolarVal">850 kW</span>
+              </div>
+              <input type="range" class="range-slider" id="simSolar" min="0" max="4000" step="50" value="850">
+            </div>
+
+            <!-- Slider 3: Wind Capacity -->
+            <div class="sim-slider-group">
+              <div class="sim-slider-label">
+                <span>Offshore / Coastal Wind (kW)</span>
+                <span class="sim-slider-val" id="simWindVal">300 kW</span>
+              </div>
+              <input type="range" class="range-slider" id="simWind" min="0" max="3000" step="50" value="300">
+            </div>
+
+            <!-- Slider 4: OTEC Capacity -->
+            <div class="sim-slider-group">
+              <div class="sim-slider-label">
+                <span>Ocean Thermal Baseload (kW)</span>
+                <span class="sim-slider-val" id="simOtecVal">250 kW</span>
+              </div>
+              <input type="range" class="range-slider" id="simOtec" min="0" max="2000" step="50" value="250">
+            </div>
+
+            <!-- Slider 5: Battery Storage -->
+            <div class="sim-slider-group">
+              <div class="sim-slider-label">
+                <span>Battery Energy Storage (kWh)</span>
+                <span class="sim-slider-val" id="simBatteryVal">1200 kWh</span>
+              </div>
+              <input type="range" class="range-slider" id="simBattery" min="0" max="6000" step="100" value="1200">
+            </div>
+
+            <!-- Slider 6: Renewable Target -->
+            <div class="sim-slider-group">
+              <div class="sim-slider-label">
+                <span>Renewable Target Policy (%)</span>
+                <span class="sim-slider-val" id="simRenTargetVal">85%</span>
+              </div>
+              <input type="range" class="range-slider" id="simRenTarget" min="20" max="100" step="5" value="85">
+            </div>
+          </div>
+
+          <!-- Right: Live Reactive Outputs -->
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div class="grid-2">
+              <div class="kpi-card success">
+                <div class="kpi-header"><span class="kpi-title">Clean Energy Share</span><div class="kpi-icon"><i class="fa-solid fa-leaf"></i></div></div>
+                <div class="kpi-value" id="simOutRenPct">86.2%</div>
+                <div class="kpi-footer" id="simOutEffectiveLoad">0.70 MW Peak Load</div>
+              </div>
+
+              <div class="kpi-card">
+                <div class="kpi-header"><span class="kpi-title">Diesel Fuel Cut</span><div class="kpi-icon"><i class="fa-solid fa-gas-pump"></i></div></div>
+                <div class="kpi-value" id="simOutDieselRed">-85.4%</div>
+                <div class="kpi-footer">Avoids blackouts & barged fuel</div>
+              </div>
+
+              <div class="kpi-card">
+                <div class="kpi-header"><span class="kpi-title">CO₂ Avoided / yr</span><div class="kpi-icon"><i class="fa-solid fa-smog"></i></div></div>
+                <div class="kpi-value" id="simOutCo2">864 <span class="unit">Tons</span></div>
+                <div class="kpi-footer">Carbon abatement</div>
+              </div>
+
+              <div class="kpi-card purple">
+                <div class="kpi-header"><span class="kpi-title">Optimization Score</span><div class="kpi-icon"><i class="fa-solid fa-award"></i></div></div>
+                <div class="kpi-value" id="simOutScore">91.5 <span class="unit">/100</span></div>
+                <div class="kpi-footer">High Efficiency (Tier 1)</div>
+              </div>
+            </div>
+
+            <!-- Suitability Feedback Box -->
+            <div class="card" style="margin-bottom: 0;">
+              <h4 style="color: #063B70; font-size: 0.95rem; margin-bottom: 8px;">Real-Time Grid Suitability Assessment</h4>
+              <div id="simSuitabilityNotes">
+                <!-- Populated dynamically via simulation.js -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulation Diurnal Dispatch Live Curve -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fa-solid fa-chart-line" style="color: #087DB5;"></i> Diurnal Dispatch Curve under Simulation
+            </div>
+          </div>
+          <div style="height: 320px; position: relative;">
+            <canvas id="simDiurnalChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           SECTION 7: RESULTS (Section 15, 16, 17)
+           ===================================================================== -->
+      <section id="section-results" class="page-section">
+        <div class="card-header" style="border: none; margin-bottom: 16px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <h2 style="font-size: 1.5rem; font-weight: 800; color: #063B70;">Optimal Configuration Results</h2>
+              <span id="resTargetIslandName" style="font-size: 0.82rem; background: #EEF6FB; color: #087DB5; font-weight: 700; padding: 4px 12px; border-radius: 20px;">Agatti Island</span>
+            </div>
+            <p class="card-subtitle">AI recommended hybrid generation mix, storage sizing, and environmental savings</p>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-outline btn-sm" onclick="BlueGridProjects.promptSaveCurrentPlan()">
+              <i class="fa-solid fa-floppy-disk"></i> Save Project
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="BlueGridApp.navigateTo('reports')">
+              <i class="fa-solid fa-file-invoice"></i> View Technical Report
+            </button>
+          </div>
+        </div>
+
+        <!-- Top KPI Cards -->
+        <div class="grid-4" style="margin-bottom: 24px;">
+          <div class="kpi-card success">
+            <div class="kpi-header"><span class="kpi-title">Renewable Penetration</span><div class="kpi-icon"><i class="fa-solid fa-leaf"></i></div></div>
+            <div class="kpi-value" id="resRenewablePct">84.7%</div>
+            <div class="kpi-footer"><i class="fa-solid fa-circle-check"></i> Meets 85% Target</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header"><span class="kpi-title">Diesel Fuel Cut</span><div class="kpi-icon"><i class="fa-solid fa-gas-pump"></i></div></div>
+            <div class="kpi-value" id="resDieselRedPct">-84.5%</div>
+            <div class="kpi-footer" id="resFuelSaved">788,000 L/yr Saved</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header"><span class="kpi-title">CO₂ Avoided</span><div class="kpi-icon"><i class="fa-solid fa-smog"></i></div></div>
+            <div class="kpi-value" id="resCo2Avoided">864 <span class="unit">Tons/yr</span></div>
+            <div class="kpi-footer">≈ 38,000 mature trees</div>
+          </div>
+
+          <div class="kpi-card purple">
+            <div class="kpi-header"><span class="kpi-title">Optimization Score</span><div class="kpi-icon"><i class="fa-solid fa-award"></i></div></div>
+            <div class="kpi-value" id="resScoreVal">90.4 <span class="unit">/100</span></div>
+            <div class="kpi-footer">Optimal (Tier 1)</div>
+          </div>
+        </div>
+
+        <div id="resScoreExplanation">
+          <!-- Populated dynamically with transparent scoring breakdown formula -->
+        </div>
+
+        <!-- SECTION 16: ANIMATED ENERGY FLOW VISUALIZATION -->
+        <div class="card" style="padding: 0; overflow: hidden; border: none;">
+          <div class="energy-flow-container">
+            <svg id="energyFlowSvg" class="flow-conduits-svg"></svg>
+
+            <div style="text-align: center; margin-bottom: 24px; position: relative; z-index: 2;">
+              <h3 style="font-size: 1.3rem; font-weight: 800; letter-spacing: 0.5px;">
+                HYBRID ENERGY FLOW ARCHITECTURE
+              </h3>
+              <p style="font-size: 0.8rem; color: rgba(255,255,255,0.7);">
+                Generation ➔ Central BlueGrid ➔ Battery Storage ➔ Island Microgrid Load
+              </p>
+            </div>
+
+            <div class="energy-flow-grid">
+              <!-- Top: Solar -->
+              <div class="flow-node solar">
+                <div class="node-icon">☀️</div>
+                <div class="node-label">Solar PV Array</div>
+                <div class="node-val" id="flowSolarVal">846 kW</div>
+                <div class="node-sub" id="flowSolarSub">Midday Peak Generation</div>
+              </div>
+
+              <!-- Left: Wind -->
+              <div class="flow-node wind">
+                <div class="node-icon">💨</div>
+                <div class="node-label">Offshore Wind</div>
+                <div class="node-val" id="flowWindVal">285 kW</div>
+                <div class="node-sub" id="flowWindSub">Evening & Monsoon Flow</div>
+              </div>
+
+              <!-- Center: BlueGrid Hub -->
+              <div class="flow-node hub glow-pulse">
+                <div class="node-icon">🌊</div>
+                <div class="node-label" style="color: var(--color-cyan);">BLUEGRID AI HUB</div>
+                <div class="node-val" id="flowHubVal">1,381 kW</div>
+                <div class="node-sub" id="flowHubSub">85% Clean Dispatch</div>
+              </div>
+
+              <!-- Right: OTEC -->
+              <div class="flow-node otec">
+                <div class="node-icon">🌊</div>
+                <div class="node-label">OTEC Power</div>
+                <div class="node-val" id="flowOtecVal">250 kW</div>
+                <div class="node-sub" id="flowOtecSub">24/7 Deep-Sea Baseload</div>
+              </div>
+
+              <!-- Bottom: Battery -->
+              <div class="flow-node battery">
+                <div class="node-icon">🔋</div>
+                <div class="node-label">Battery BESS</div>
+                <div class="node-val" id="flowBatteryVal">1,250 kWh</div>
+                <div class="node-sub" id="flowBatterySub">Night Buffer & Frequency</div>
+              </div>
+
+              <!-- Final: Island Load -->
+              <div class="flow-node load">
+                <div class="node-icon">🏝</div>
+                <div class="node-label">Island Community Load</div>
+                <div class="node-val" id="flowLoadVal">450 kW Avg</div>
+                <div class="node-sub" id="flowLoadSub">Zero Power Cuts (99.8%)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Doughnut Mix Chart & Summary -->
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Recommended Energy Mix</div>
+            </div>
+            <div style="height: 280px; position: relative;">
+              <canvas id="resultsDoughnutChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div class="card-header">
+                <div class="card-title">Key Engineering Findings</div>
+              </div>
+              <ul style="font-size: 0.88rem; color: #537592; line-height: 1.7; padding-left: 20px;">
+                <li><strong>Continuous OTEC Baseload:</strong> 250 kW closed-cycle OTEC provides a stable floor, reducing battery storage capital expense by <strong>42%</strong> compared to pure solar-plus-storage.</li>
+                <li><strong>Midday Solar Firming:</strong> Solar arrays generate substantial daytime surplus which charges the containerized BESS.</li>
+                <li><strong>Diesel Generators:</strong> Existing 950 kW diesel gensets transition strictly to cold standby spinning reserve for extreme cyclone events.</li>
+              </ul>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+              <button class="btn btn-outline" style="flex: 1;" onclick="BlueGridApp.navigateTo('plants')">
+                <i class="fa-solid fa-solar-panel"></i> View Plant Counts
+              </button>
+              <button class="btn btn-primary" style="flex: 1;" onclick="BlueGridApp.navigateTo('analytics')">
+                <i class="fa-solid fa-chart-line"></i> Full Analytics
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           SECTION 8: POWER PLANTS (Section 13 & 14)
+           ===================================================================== -->
+      <section id="section-plants" class="page-section">
+        <div class="card-header" style="border: none; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 1.5rem; font-weight: 800; color: #063B70;">Power Plant Suitability & Unit Sizing</h2>
+            <p class="card-subtitle">Detailed evaluation of infrastructure sufficiency, plant expansion requirements, and modular unit counts</p>
+          </div>
+        </div>
+
+        <!-- Section 13: Suitability Cards -->
+        <h3 style="font-size: 1.15rem; font-weight: 700; color: #063B70; margin-bottom: 14px;">
+          Infrastructure Suitability Evaluation
+        </h3>
+        <div class="suitability-grid" id="suitabilityCardsContainer">
+          <!-- Populated dynamically via renderSuitabilitySection() -->
+        </div>
+
+        <!-- Section 14: Number of Power Plants Unit Comparison -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Number of Power Plants Calculation</div>
+              <p class="card-subtitle">Calculated using modular unit standards: 1 Solar = 250 kW, 1 Wind = 500 kW, 1 OTEC = 500 kW, 1 BESS = 500 kWh</p>
+            </div>
+          </div>
+          <table class="plant-counts-table">
+            <thead>
+              <tr>
+                <th>Plant Type</th>
+                <th>Standard Unit Size</th>
+                <th>Existing Plants</th>
+                <th>Recommended Plants</th>
+                <th>Additional Units to Build</th>
+              </tr>
+            </thead>
+            <tbody id="plantCountsTableBody">
+              <!-- Populated dynamically via renderPlantCountsSection() -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Capacity Bar Chart -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Installed Capacity Comparison (Existing vs Recommended)</div>
+          </div>
+          <div style="height: 300px; position: relative;">
+            <canvas id="plantsBarChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           SECTION 9: ENERGY ANALYTICS (Section 17)
+           ===================================================================== -->
+      <section id="section-analytics" class="page-section">
+        <div class="card-header" style="border: none; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 1.5rem; font-weight: 800; color: #063B70;">Energy Analytics & Dispatch Curves</h2>
+            <p class="card-subtitle">Diurnal dispatch simulation, seasonal variability, and 10-year cumulative fuel/carbon savings</p>
+          </div>
+        </div>
+
+        <!-- 24-Hour Diurnal Dispatch Chart -->
+        <div class="card" style="margin-bottom: 24px;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">24-Hour Diurnal Dispatch Curve (Demand vs Clean Generation)</div>
+              <p class="card-subtitle">Hourly simulation of solar peak, wind flow, OTEC 24/7 base, and battery charge/discharge balance</p>
+            </div>
+          </div>
+          <div style="height: 340px; position: relative;">
+            <canvas id="analyticsDiurnalChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Monthly & 10-Year Cumulative Savings Grid -->
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Monthly Generation Forecast (Renewable vs Diesel)</div>
+            </div>
+            <div style="height: 280px; position: relative;">
+              <canvas id="analyticsMonthlyChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">10-Year Cumulative Fuel Savings & CO₂ Abatement</div>
+            </div>
+            <div style="height: 280px; position: relative;">
+              <canvas id="analyticsSavingsChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           SECTION 10: REPORTS (Section 25)
+           ===================================================================== -->
+      <section id="section-reports" class="page-section">
+        <div class="card-header" style="border: none; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 1.5rem; font-weight: 800; color: #063B70;">Island Renewable Energy Optimization Report</h2>
+            <p class="card-subtitle">Comprehensive 14-section formal engineering report ready for export and stakeholder presentation</p>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-outline" onclick="BlueGridReports.printReport()">
+              <i class="fa-solid fa-print"></i> Print Report
+            </button>
+            <button class="btn btn-primary" onclick="BlueGridReports.printReport()">
+              <i class="fa-solid fa-file-pdf"></i> Download PDF Report
+            </button>
+          </div>
+        </div>
+
+        <div id="reportDisplayArea">
+          <!-- Populated dynamically via BlueGridReports.generateAndDisplayReport() -->
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           SECTION 11: SAVED PROJECTS (Section 26)
+           ===================================================================== -->
+      <section id="section-projects" class="page-section">
+        <div class="card-header" style="border: none; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 1.5rem; font-weight: 800; color: #063B70;">Saved Planning Projects</h2>
+            <p class="card-subtitle">Manage archived island scenarios, export plan datasets, and benchmark alternative clean transitions</p>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <label class="btn btn-outline" style="cursor: pointer;">
+              <i class="fa-solid fa-file-import"></i> Import Project JSON
+              <input type="file" accept=".json" style="display: none;" onchange="BlueGridProjects.handleImportJson(event)">
+            </label>
+            <button class="btn btn-primary" onclick="BlueGridProjects.promptSaveCurrentPlan()">
+              <i class="fa-solid fa-plus"></i> Save Active Plan
+            </button>
+          </div>
+        </div>
+
+        <div class="grid-3" id="savedProjectsGrid">
+          <!-- Populated dynamically via BlueGridProjects.loadProjectsList() -->
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           SECTION 12: SETTINGS & SYSTEM STATUS & NIOT IMPORT (Section 21, 22, 27)
+           ===================================================================== -->
+      <section id="section-settings" class="page-section">
+        <div class="card-header" style="border: none; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 1.5rem; font-weight: 800; color: #063B70;">System Status & NIOT Data Ingestion</h2>
+            <p class="card-subtitle">Verify operational diagnostics across all platform tiers and import external CSV survey datasets</p>
+          </div>
+        </div>
+
+        <!-- Section 27: System Status Diagnostic Cards -->
+        <h3 style="font-size: 1.15rem; font-weight: 700; color: #063B70; margin-bottom: 14px;">
+          System Operational Diagnostics
+        </h3>
+        <div class="grid-3" style="margin-bottom: 28px;">
+          <div class="card">
+            <div class="suit-metric-row">
+              <span>Backend Server:</span>
+              <strong id="sysDiagBackend">🟢 Connected</strong>
+            </div>
+            <div class="suit-metric-row">
+              <span>Local Database:</span>
+              <strong id="sysDiagDb">🟢 Connected (SQLite)</strong>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="suit-metric-row">
+              <span>Optimization Engine:</span>
+              <strong id="sysDiagOpt">🟢 Ready (Python & Local JS)</strong>
+            </div>
+            <div class="suit-metric-row">
+              <span>Offline PWA Cache:</span>
+              <strong id="sysDiagCache">🟢 Available</strong>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="suit-metric-row">
+              <span>Internet Connectivity:</span>
+              <strong id="sysDiagInternet">🟢 Online</strong>
+            </div>
+            <div class="suit-metric-row">
+              <span>REST API Status:</span>
+              <strong id="sysDiagApi">🟢 Healthy</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 22: NIOT Data Import -->
+        <div class="card" style="margin-bottom: 28px;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <i class="fa-solid fa-file-csv" style="color: #087DB5;"></i> Import NIOT Ocean Survey Data
+              </div>
+              <p class="card-subtitle">
+                Ingest island bathymetry, renewable resource factors, and demand datasets via standard CSV.
+              </p>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="BlueGridNiotImport.downloadSampleCsv()">
+              <i class="fa-solid fa-download"></i> Download Sample CSV Template
+            </button>
+          </div>
+
+          <!-- Drag and Drop Zone -->
+          <div id="niotDropzone" class="dropzone-box">
+            <div class="dropzone-icon">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <h4 style="color: #063B70; margin-bottom: 6px;">Drag and drop niot.csv file here</h4>
+            <p style="color: #537592; font-size: 0.85rem; margin-bottom: 12px;">
+              or click to browse your computer
+            </p>
+            <div style="font-size: 0.78rem; color: #087DB5; font-weight: 600;">
+              <span id="stagedFileName">No file selected</span> <span id="stagedFileSize"></span>
+            </div>
+            <input type="file" id="niotFileInput" accept=".csv" style="display: none;">
+          </div>
+
+          <!-- Preview & Validation Area -->
+          <div id="niotPreviewArea" style="display: none;"></div>
+
+          <!-- Commit Results Feedback Card -->
+          <div id="niotImportResultsCard" style="display: none; margin-top: 18px; background: #EEF6FB; border: 1px solid #087DB5; border-radius: 8px; padding: 16px;">
+            <h4 style="color: #063B70; margin-bottom: 10px; font-size: 0.95rem;">Database Synchronization Summary</h4>
+            <div class="grid-3">
+              <div>Rows Imported: <strong id="resRowsImported" style="color: #10B981;">0</strong></div>
+              <div>Rows Updated: <strong id="resRowsUpdated" style="color: #087DB5;">0</strong></div>
+              <div>Rows Rejected: <strong id="resRowsRejected" style="color: #EF4444;">0</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 11 & 14: Configurable Constants -->
+        <div class="card" style="margin-bottom: 24px;">
+          <div class="card-header">
+            <div class="card-title">Configurable Engineering Capacity Factors & Unit Sizing</div>
+          </div>
+          <div class="grid-3" style="font-size: 0.88rem;">
+            <div>
+              <label style="display: block; font-weight: 600; color: #537592; margin-bottom: 4px;">Solar Capacity Factor</label>
+              <input type="number" step="0.01" value="0.20" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #CBD5E1;">
+            </div>
+            <div>
+              <label style="display: block; font-weight: 600; color: #537592; margin-bottom: 4px;">Wind Capacity Factor</label>
+              <input type="number" step="0.01" value="0.35" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #CBD5E1;">
+            </div>
+            <div>
+              <label style="display: block; font-weight: 600; color: #537592; margin-bottom: 4px;">OTEC Capacity Factor</label>
+              <input type="number" step="0.01" value="0.80" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #CBD5E1;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Geospatial Tile & API Key Management Card -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fa-solid fa-map-location-dot" style="color: #087DB5;"></i> Geospatial Mapping & Weather API Keys
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="BlueGridMap.openApiKeyModal()">
+              <i class="fa-solid fa-key"></i> Configure API Keys
+            </button>
+          </div>
+          <div style="font-size: 0.88rem; color: #537592; line-height: 1.6;">
+            <p style="margin-bottom: 10px;">
+              BlueGrid AI connects to multi-provider geospatial services. You can configure a <strong>Mapbox Access Token</strong> to unlock high-resolution satellite imagery (up to 4K resolution) and custom nautical vector basemaps.
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; background: #EEF6FB; padding: 14px 18px; border-radius: 8px;">
+              <div>
+                <strong>Active Map Tile Provider:</strong>
+                <div id="settingsActiveProviderLabel" style="color: #087DB5; font-weight: 700; margin-top: 2px;">
+                  Esri Ocean Bathymetry & Seabed Depths
+                </div>
+              </div>
+              <div>
+                <strong>Mapbox API Integration:</strong>
+                <div style="margin-top: 2px;">
+                  <button class="btn btn-outline btn-sm" onclick="BlueGridMap.openApiKeyModal()">
+                    <i class="fa-solid fa-gear"></i> Set Mapbox Token (pk.eyJ...)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- Modal: Map & Weather API Key Configuration -->
+<div id="mapApiKeyModal" class="modal-overlay">
+  <div class="modal-box" style="max-width: 620px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #087DB5; padding-bottom: 12px; margin-bottom: 18px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 1.5rem;">🔑</span>
+        <h3 style="margin: 0; color: #063B70; font-size: 1.25rem; font-weight: 800;">
+          Configure Map & Satellite API Key
+        </h3>
+      </div>
+      <button onclick="BlueGridMap.closeApiKeyModal()" style="background: none; border: none; font-size: 1.6rem; color: #537592; cursor: pointer; line-height: 1;">&times;</button>
+    </div>
+
+    <p style="font-size: 0.86rem; color: #537592; margin-bottom: 16px; line-height: 1.5;">
+      Activate your <strong>Mapbox API Key</strong> to unlock ultra-high-definition 4K satellite photography and dynamic vector tiles for island microgrids. Or continue using the built-in free <strong>Esri Ocean Bathymetry & Seabed Depth</strong> layers.
+    </p>
+
+    <!-- Mapbox API Key Input Box -->
+    <div style="background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 8px; padding: 18px; margin-bottom: 20px;">
+      <label style="display: block; font-size: 0.86rem; font-weight: 700; color: #063B70; margin-bottom: 6px;">
+        Mapbox Public Access Token (<code style="color: #087DB5;">pk.eyJ...</code>)
+      </label>
+      <div style="display: flex; gap: 8px; margin-bottom: 6px;">
+        <input type="text" id="inputMapboxToken" placeholder="Paste your Mapbox token (e.g. pk.eyJ1...)"
+               style="flex: 1; padding: 10px 12px; border-radius: 6px; border: 1px solid #CBD5E1; font-family: monospace; font-size: 0.85rem;">
+        <button class="btn btn-primary" onclick="BlueGridMap.saveAndActivateMapboxKey()">
+          <i class="fa-solid fa-check"></i> Activate Key
+        </button>
+      </div>
+      <div id="mapboxKeyStatusMsg" style="min-height: 20px; font-size: 0.8rem;"></div>
+      <div style="margin-top: 6px; font-size: 0.78rem; color: #537592;">
+        <i class="fa-solid fa-circle-info" style="color: #087DB5;"></i> Don't have a Mapbox token? Get one free at <a href="https://account.mapbox.com/access-tokens/" target="_blank" style="color: #087DB5; font-weight: 700;">mapbox.com</a>, or click below to use the built-in satellite layer with zero keys required.
+      </div>
+    </div>
+
+    <!-- Built-In Layers Notice -->
+    <div style="background: #EEF6FB; border: 1px solid #087DB5; border-radius: 8px; padding: 14px 16px; margin-bottom: 20px;">
+      <h4 style="color: #063B70; font-size: 0.92rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-layer-group" style="color: #087DB5;"></i> Built-In Active Layers (No Key Required)
+      </h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.82rem; color: #082B45;">
+        <div>🌊 <strong>Esri Ocean Bathymetry:</strong> Seabed depths & reef contours</div>
+        <div>🛰️ <strong>Esri World Imagery:</strong> Aerial satellite photography</div>
+        <div>🗺️ <strong>CARTO Voyager:</strong> Coastal navigation vectors</div>
+        <div>🌐 <strong>OpenStreetMap:</strong> Standard topography</div>
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <button class="btn btn-outline btn-sm" style="color: #EF4444; border-color: #EF4444;" onclick="document.getElementById('inputMapboxToken').value=''; BlueGridMap.saveAndActivateMapboxKey();">
+        <i class="fa-solid fa-trash"></i> Reset / Remove Key
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="BlueGridMap.closeApiKeyModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<!-- Leaflet Map JS CDN -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<!-- Application Scripts -->
+<script src="js/optimizer-client.js"></script>
+<script src="js/api.js"></script>
+<script src="js/map.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/energy-flow.js"></script>
+<script src="js/simulation.js"></script>
+<script src="js/projects.js"></script>
+<script src="js/niot-import.js"></script>
+<script src="js/reports.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>

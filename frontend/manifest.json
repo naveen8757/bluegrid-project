@@ -1,0 +1,22 @@
+{
+  "name": "BlueGrid AI — Island Renewable Energy Planner",
+  "short_name": "BlueGrid AI",
+  "description": "AI-powered hybrid renewable energy planner for sustainable island microgrids.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#063B70",
+  "theme_color": "#087DB5",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "./assets/icon-192.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192"
+    },
+    {
+      "src": "./assets/icon-512.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512"
+    }
+  ]
+}

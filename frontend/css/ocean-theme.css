@@ -1,0 +1,223 @@
+/* ==========================================================================
+   BLUEGRID AI — Ocean Theme & Animated Visual Effects
+   Section 5 & Section 28 Implementation
+   ========================================================================== */
+
+/* Hero Landing Section */
+.hero-ocean-banner {
+  position: relative;
+  background: linear-gradient(135deg, #063B70 0%, #087DB5 60%, #0B4F8A 100%);
+  border-radius: var(--border-radius-lg);
+  padding: 60px 48px 80px;
+  color: #FFFFFF;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 32px;
+}
+
+.hero-particles-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hero-waves-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 90px;
+  overflow: hidden;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.hero-wave-svg {
+  display: block;
+  width: 200%;
+  height: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  animation: waveMotion 12s linear infinite;
+  opacity: 0.25;
+}
+
+.hero-wave-svg.wave-front {
+  animation: waveMotion 7s linear infinite reverse;
+  opacity: 0.45;
+}
+
+@keyframes waveMotion {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.hero-content {
+  position: relative;
+  z-index: 3;
+  max-width: 820px;
+}
+
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(22, 199, 217, 0.2);
+  border: 1px solid rgba(22, 199, 217, 0.4);
+  padding: 6px 16px;
+  border-radius: 30px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--color-cyan);
+  margin-bottom: 20px;
+}
+
+.hero-title {
+  font-size: 2.75rem;
+  font-weight: 800;
+  line-height: 1.18;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
+}
+
+.hero-title .text-gradient {
+  background: linear-gradient(90deg, #FFFFFF 0%, #16C7D9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+  font-size: 1.18rem;
+  color: rgba(255, 255, 255, 0.88);
+  font-weight: 400;
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
+.hero-stats-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  background: rgba(6, 43, 69, 0.45);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--border-radius-md);
+  padding: 20px 24px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.stat-value .unit {
+  font-size: 1.05rem;
+  color: var(--color-cyan);
+  font-weight: 600;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.demo-disclaimer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.76rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 12px;
+  border-radius: 20px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 14px;
+}
+
+/* Glassmorphism utility */
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* Pulse / Glow Animation */
+.glow-pulse {
+  animation: pulseGlow 2.5s infinite;
+}
+
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 0 0 rgba(22, 199, 217, 0.5); }
+  70% { box-shadow: 0 0 0 14px rgba(22, 199, 217, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(22, 199, 217, 0); }
+}
+
+/* Island Map Container */
+#islandMap {
+  width: 100%;
+  height: 540px;
+  min-height: 480px;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-card-border);
+  box-shadow: var(--shadow-sm);
+  z-index: 10;
+  background: #082B45;
+}
+
+/* Custom Leaflet Map Markers */
+.island-map-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--color-deep-ocean);
+  border: 3px solid var(--color-cyan);
+  border-radius: 50%;
+  color: #FFFFFF;
+  font-size: 14px;
+  box-shadow: 0 0 12px var(--color-cyan-glow);
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+.island-map-marker:hover {
+  transform: scale(1.25);
+  border-color: #FFFFFF;
+}
+
+@media (max-width: 768px) {
+  .hero-ocean-banner {
+    padding: 36px 20px 60px;
+  }
+  .hero-title {
+    font-size: 1.95rem;
+  }
+  .hero-stats-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

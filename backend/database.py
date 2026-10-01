@@ -1,0 +1,261 @@
+"""
+SQLite Database Layer for BlueGrid AI
+Manages schema definition, migration, connection lifecycle, and initial dataset seeding.
+"""
+
+import sqlite3
+import json
+import os
+from datetime import datetime
+from pathlib import Path
+
+# Paths
+BASE_DIR = Path(__file__).resolve().parent
+DB_PATH = BASE_DIR / "bluegrid.db"
+DATA_DIR = BASE_DIR / "data"
+ISLANDS_JSON = DATA_DIR / "islands.json"
+
+def get_db_connection():
+    """Returns a SQLite connection with dictionary row access."""
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
+    return conn
+
+def init_db():
+    """Initializes the database schema and seeds initial island data if empty."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Table 1: islands
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS islands (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
+        region TEXT NOT NULL,
+        state_ut TEXT DEFAULT 'India',
+        latitude REAL NOT NULL,
+        longitude REAL NOT NULL,
+        population INTEGER DEFAULT 1000,
+        area_sqkm REAL DEFAULT 5.0,
+        peak_demand_mw REAL NOT NULL,
+        average_demand_mw REAL NOT NULL,
+        solar_potential REAL DEFAULT 0.20,
+        wind_potential REAL DEFAULT 0.30,
+        otec_potential REAL DEFAULT 0.80,
+        existing_solar_kw REAL DEFAULT 0,
+        existing_wind_kw REAL DEFAULT 0,
+        existing_otec_kw REAL DEFAULT 0,
+        existing_diesel_kw REAL DEFAULT 500,
+        battery_kwh REAL DEFAULT 200,
+        depth_1000m_dist_km REAL DEFAULT 5.0,
+        surface_temp_c REAL DEFAULT 28.5,
+        deep_sea_temp_c REAL DEFAULT 6.0,
+        description TEXT,
+        is_demo INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
+
+    # Table 2: energy_plants
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS energy_plants (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        island_id INTEGER NOT NULL,
+        plant_type TEXT NOT NULL, -- 'Solar', 'Wind', 'OTEC', 'Battery', 'Diesel'
+        capacity_kw REAL NOT NULL,
+        unit_count INTEGER DEFAULT 1,
+        status TEXT DEFAULT 'Operating', -- 'Operating', 'Recommended', 'Under Construction', 'Standby'
+        commissioned_date TEXT,
+        notes TEXT,
+        FOREIGN KEY (island_id) REFERENCES islands(id) ON DELETE CASCADE
+    );
+    """)
+
+    # Table 3: optimization_runs
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS optimization_runs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        island_id INTEGER,
+        island_name TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        peak_demand_mw REAL,
+        average_demand_mw REAL,
+        solar_kw REAL,
+        wind_kw REAL,
+        otec_kw REAL,
+        battery_kwh REAL,
+        diesel_kw REAL,
+        renewable_percent REAL,
+        diesel_reduction REAL,
+        co2_reduction_tons REAL,
+        annual_energy_mwh REAL,
+        unmet_load_kwh REAL,
+        score REAL,
+        plant_counts_json TEXT,
+        details_json TEXT,
+        FOREIGN KEY (island_id) REFERENCES islands(id) ON DELETE SET NULL
+    );
+    """)
+
+    # Table 4: simulation_runs
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS simulation_runs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        island_id INTEGER,
+        island_name TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        demand_multiplier REAL DEFAULT 1.0,
+        solar_cf REAL,
+        wind_cf REAL,
+        otec_cf REAL,
+        solar_kw REAL,
+        wind_kw REAL,
+        otec_kw REAL,
+        battery_kwh REAL,
+        renewable_percent REAL,
+        diesel_reduction REAL,
+        co2_reduction_tons REAL,
+        score REAL
+    );
+    """)
+
+    # Table 5: saved_projects
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS saved_projects (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        description TEXT,
+        island_id INTEGER,
+        island_name TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        inputs_json TEXT,
+        results_json TEXT,
+        simulation_json TEXT,
+        tags TEXT
+    );
+    """)
+
+    # Table 6: system_settings
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS system_settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        description TEXT,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
+
+    # Default settings
+    default_settings = [
+        ("SOLAR_CF", "0.20", "Solar Photovoltaic Capacity Factor"),
+        ("WIND_CF", "0.35", "Wind Turbine Offshore/Coastal Capacity Factor"),
+        ("OTEC_CF", "0.80", "Ocean Thermal Energy Conversion Capacity Factor"),
+        ("DIESEL_EMISSION_FACTOR_KG_KWH", "0.78", "kg CO2 emissions per kWh generated by diesel"),
+        ("DIESEL_LITERS_PER_KWH", "0.28", "Liters of diesel fuel consumed per kWh generation"),
+        ("DIESEL_COST_USD_LITER", "1.15", "Delivered landed cost of diesel fuel on remote island ($/L)"),
+        ("SOLAR_PLANT_UNIT_KW", "250", "Standard capacity of one modular solar array (kW)"),
+        ("WIND_PLANT_UNIT_KW", "500", "Standard capacity of one island wind turbine unit (kW)"),
+        ("OTEC_PLANT_UNIT_KW", "500", "Standard capacity of one modular OTEC closed-cycle unit (kW)"),
+        ("BATTERY_SYSTEM_UNIT_KWH", "500", "Standard capacity of one containerized BESS unit (kWh)"),
+        ("MAPBOX_API_KEY", "", "Mapbox Public Access Token for High-Res Satellite and Vector Tiles"),
+        ("OPENWEATHER_API_KEY", "", "OpenWeather API Key for live maritime wind and cloud overlays")
+    ]
+
+    for key, val, desc in default_settings:
+        cursor.execute("""
+        INSERT OR IGNORE INTO system_settings (key, value, description)
+        VALUES (?, ?, ?)
+        """, (key, val, desc))
+
+    # Seed islands if empty
+    cursor.execute("SELECT COUNT(*) FROM islands")
+    count = cursor.fetchone()[0]
+    if count == 0 and ISLANDS_JSON.exists():
+        with open(ISLANDS_JSON, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            for item in data.get("islands", []):
+                cursor.execute("""
+                INSERT INTO islands (
+                    name, region, state_ut, latitude, longitude, population, area_sqkm,
+                    peak_demand_mw, average_demand_mw, solar_potential, wind_potential,
+                    otec_potential, existing_solar_kw, existing_wind_kw, existing_otec_kw,
+                    existing_diesel_kw, battery_kwh, depth_1000m_dist_km, surface_temp_c,
+                    deep_sea_temp_c, description, is_demo
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    item.get("name"),
+                    item.get("region", "Lakshadweep"),
+                    item.get("state_ut", "India"),
+                    item.get("latitude"),
+                    item.get("longitude"),
+                    item.get("population", 1000),
+                    item.get("area_sqkm", 3.0),
+                    item.get("peak_demand_mw", 0.5),
+                    item.get("average_demand_mw", 0.3),
+                    item.get("solar_potential", 0.20),
+                    item.get("wind_potential", 0.30),
+                    item.get("otec_potential", 0.80),
+                    item.get("existing_solar_kw", 0),
+                    item.get("existing_wind_kw", 0),
+                    item.get("existing_otec_kw", 0),
+                    item.get("existing_diesel_kw", 600),
+                    item.get("battery_kwh", 200),
+                    item.get("depth_1000m_dist_km", 3.0),
+                    item.get("surface_temp_c", 28.5),
+                    item.get("deep_sea_temp_c", 6.0),
+                    item.get("description", ""),
+                    1 if item.get("is_demo", True) else 0
+                ))
+                island_id = cursor.lastrowid
+
+                # Seed existing energy plants for this island
+                if item.get("existing_solar_kw", 0) > 0:
+                    cursor.execute("""
+                    INSERT INTO energy_plants (island_id, plant_type, capacity_kw, unit_count, status, notes)
+                    VALUES (?, 'Solar', ?, ?, 'Operating', 'Existing rooftop & ground PV arrays')
+                    """, (island_id, item["existing_solar_kw"], max(1, int(round(item["existing_solar_kw"] / 100)))))
+
+                if item.get("existing_wind_kw", 0) > 0:
+                    cursor.execute("""
+                    INSERT INTO energy_plants (island_id, plant_type, capacity_kw, unit_count, status, notes)
+                    VALUES (?, 'Wind', ?, ?, 'Operating', 'Coastal small-wind trial installation')
+                    """, (island_id, item["existing_wind_kw"], max(1, int(round(item["existing_wind_kw"] / 50)))))
+
+                if item.get("existing_otec_kw", 0) > 0:
+                    cursor.execute("""
+                    INSERT INTO energy_plants (island_id, plant_type, capacity_kw, unit_count, status, notes)
+                    VALUES (?, 'OTEC', ?, ?, 'Operating', 'NIOT LTTD & OTEC pilot module')
+                    """, (island_id, item["existing_otec_kw"], 1))
+
+                if item.get("existing_diesel_kw", 0) > 0:
+                    cursor.execute("""
+                    INSERT INTO energy_plants (island_id, plant_type, capacity_kw, unit_count, status, notes)
+                    VALUES (?, 'Diesel', ?, ?, 'Operating', 'Existing diesel generator power house')
+                    """, (island_id, item["existing_diesel_kw"], max(1, int(round(item["existing_diesel_kw"] / 400)))))
+
+                if item.get("battery_kwh", 0) > 0:
+                    cursor.execute("""
+                    INSERT INTO energy_plants (island_id, plant_type, capacity_kw, unit_count, status, notes)
+                    VALUES (?, 'Battery', ?, ?, 'Operating', 'Existing lead-acid / Li-ion battery bank')
+                    """, (island_id, item["battery_kwh"], max(1, int(round(item["battery_kwh"] / 250)))))
+
+    conn.commit()
+    conn.close()
+
+def get_settings_dict():
+    """Retrieves all system settings as a clean dictionary."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT key, value FROM system_settings")
+    rows = cursor.fetchall()
+    conn.close()
+    settings = {}
+    for r in rows:
+        try:
+            val = float(r["value"])
+        except ValueError:
+            val = r["value"]
+        settings[r["key"]] = val
+    return settings
